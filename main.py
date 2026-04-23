@@ -1,26 +1,35 @@
 import pygame
 import sys
 
-# --- Import Core & Fitur (Tugas Utama B: Logic & Persistensi) ---
+# --- Import Core & Fitur  ---
 from core.ui_manager import UIManager
 from fitur.undo_redo import UndoRedoManager
 from fitur.save_load import SaveLoadManager
 from fitur.algoritma import ManualAlgorithms
+from core.input_handler import InputHandler 
 
-# --- Import Objek Jatah B ---
+# --- Import Objek ---
 from objek2d.donut import Donut
+from objek2d.belah_ketupat import BelahKetupat
+from objek2d.setengah_lingkaran import SetengahLingkaran
 from objek3d.bola import Bola
 from objek3d.setengah_bola import SetengahBola
+from objek3d.tabung import Tabung
+from objek3d.kerucut import Kerucut
 
 # --- REGISTRY: Alur data untuk fungsionalitas Save/Load ---
 SaveLoadManager.register_shape("Donut", Donut)
 SaveLoadManager.register_shape("Bola", Bola)
 SaveLoadManager.register_shape("SetengahBola", SetengahBola)
+SaveLoadManager.register_shape("BelahKetupat", BelahKetupat)
+SaveLoadManager.register_shape("SetengahLingkaran", SetengahLingkaran)
+SaveLoadManager.register_shape("Kerucut", Kerucut)
+SaveLoadManager.register_shape("Tabung", Tabung)
 
 def main():
     pygame.init()
     screen = pygame.display.set_mode((1000, 700))
-    pygame.display.set_caption("PyPaint - System Architect (B) Edition")
+    pygame.display.set_caption("PyPaint - System Architect & Input Specialist Edition")
 
     ui = UIManager(screen)
     history = UndoRedoManager(max_history=30)
@@ -46,87 +55,12 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
-            # === A. SYSTEM LOGIC: KEYBOARD (Shortcut & Tools) ===
-            elif event.type == pygame.KEYDOWN:
-                # 1. Fungsionalitas Save & Load (Ctrl+S / Ctrl+O)
-                if pygame.key.get_mods() & pygame.KMOD_CTRL:
-                    if event.key == pygame.K_z: 
-                        shapes = history.undo(shapes)
-                        selected_shape = None
-                    elif event.key == pygame.K_y: 
-                        shapes = history.redo(shapes)
-                        selected_shape = None
-                    elif event.key == pygame.K_s: 
-                        SaveLoadManager.save_project(shapes)
-                    elif event.key == pygame.K_o: 
-                        loaded = SaveLoadManager.load_project()
-                        if loaded:
-                            shapes = loaded
-                            history.clear_history()
-                            history.save_state(shapes)
-                            selected_shape = None
-
-                # 2. Fitur Coloring (Tekan 'C' untuk ganti warna aktif/objek terpilih)
-                elif event.key == pygame.K_c:
-                    color_idx = (color_idx + 1) % len(palette)
-                    current_color = palette[color_idx]
-                    if selected_shape:
-                        selected_shape.set_color(current_color)
-                        history.save_state(shapes)
-
-                # 3. Fitur Z-Depth (Gerakkan objek di sumbu Z: Betulan 3D)
-                elif selected_shape:
-                    if event.key == pygame.K_PERIOD: # Tombol '>' geser menjauh (Z+)
-                        selected_shape.translate(0, 0, 10)
-                        history.save_state(shapes)
-                    elif event.key == pygame.K_COMMA: # Tombol '<' geser mendekat (Z-)
-                        selected_shape.translate(0, 0, -10)
-                        history.save_state(shapes)
-                    elif event.key == pygame.K_DELETE:
-                        shapes.remove(selected_shape)
-                        selected_shape = None
-                        history.save_state(shapes)
-
-                # Tool Switcher
-                elif event.key == pygame.K_1: current_tool = "SELECT"
-                elif event.key == pygame.K_2: current_tool = "DONUT"
-                elif event.key == pygame.K_3: current_tool = "BOLA"
-                elif event.key == pygame.K_4: current_tool = "SETENGAH_BOLA"
-                elif event.key == pygame.K_5: current_tool = "FILL" # Fitur Fill Area
-
-            # === B. SYSTEM LOGIC: MOUSE (Interaction) ===
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1 and ui.is_canvas_clicked(mouse_pos):
-                    
-                    # Fitur: Fill Area (Flood Fill Manual)
-                    if current_tool == "FILL":
-                        ManualAlgorithms.flood_fill(screen, mouse_pos, current_color)
-                        # Flood fill memanipulasi pixel langsung, rekam ke stack
-                        history.save_state(shapes)
-                    
-                    # Fitur: Seleksi (Styling untuk Coloring)
-                    elif current_tool == "SELECT":
-                        selected_shape = None
-                        for s in reversed(shapes):
-                            s.is_selected = False
-                            if not selected_shape and s.is_clicked(mouse_pos):
-                                s.is_selected = True
-                                selected_shape = s
-                    
-                    # Fitur: Penambahan Objek (Koordinat X, Y, Z=0)
-                    elif current_tool in ["DONUT", "BOLA", "SETENGAH_BOLA"]:
-                        new_obj = None
-                        if current_tool == "DONUT":
-                            new_obj = Donut(mouse_pos[0], mouse_pos[1], 0, current_color)
-                        elif current_tool == "BOLA":
-                            new_obj = Bola(mouse_pos[0], mouse_pos[1], 0, current_color)
-                        elif current_tool == "SETENGAH_BOLA":
-                            new_obj = SetengahBola(mouse_pos[0], mouse_pos[1], 0, current_color)
-                        
-                        if new_obj:
-                            shapes.append(new_obj)
-                            history.save_state(shapes)
+                
+            #  Panggil Input Handler untuk menyambungkan semua klik dan keyboard ke file input_handler.py
+            current_tool, selected_shape, color_idx, current_color = InputHandler.handle_event(
+                event, mouse_pos, screen, ui, shapes, history, 
+                current_tool, selected_shape, palette, color_idx, current_color
+            )
 
         # --- C. RENDERING (Output Visual) ---
         screen.fill((240, 240, 240))
@@ -150,16 +84,22 @@ def main():
             "[2] Donut 2D",
             "[3] Bola 3D",
             "[4] Hemisphere 3D",
-            "[5] Fill Area (Manual)",
+            "[5] Belah Ketupat",
+            "[6] Semicircle",
+            "[7] Tabung 3D",
+            "[8] Kerucut 3D",
+            "[9] Fill Area (Manual)",
             "",
-            "Logic Controls:",
-            "- C: Cycle Color (Coloring)",
-            "- </>: Move Z-Axis (Betulan 3D)",
+            "Logic & Transform:",
+            "- C: Cycle Color",
+            "- +/-: Scaling Objek",
+            "- </>: Move Z-Axis",
+            "- WASDQE: Rotasi 3D",
             "- Del: Remove Object",
             "",
             "Data Persistence:",
             "- Ctrl+Z/Y: Undo/Redo",
-            "- Ctrl+S/O: Save/Load JSON"
+            "- Ctrl+S/O: Save/Load"
         ]
         
         for i, text in enumerate(instructions):
