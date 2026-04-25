@@ -69,6 +69,18 @@ class Kerucut(BaseShape):
             if i % 2 == 0: 
                 ManualAlgorithms.draw_line_bresenham(surface, self.outline_color, p1, apex_2d)
 
+        # 4. Indikator Seleksi
+        if self.is_selected:
+            all_pts = base_points + [apex_2d]
+            min_x = min([p[0] for p in all_pts])
+            max_x = max([p[0] for p in all_pts])
+            min_y = min([p[1] for p in all_pts])
+            max_y = max([p[1] for p in all_pts])
+            
+            pygame.draw.rect(surface, (255, 0, 0), (min_x, min_y, max_x - min_x, max_y - min_y), 1)
+            for p in [(min_x, min_y), (max_x, min_y), (min_x, max_y), (max_x, max_y)]:
+                pygame.draw.rect(surface, (0, 0, 255), (int(p[0]) - 3, int(p[1]) - 3, 6, 6))
+
     def is_clicked(self, mouse_pos):
         """Deteksi klik sederhana berdasarkan area cakupan objek."""
         mx, my = mouse_pos
