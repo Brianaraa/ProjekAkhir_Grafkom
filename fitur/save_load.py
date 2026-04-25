@@ -54,7 +54,7 @@ class SaveLoadManager:
             
             for item in raw_data:
                 # Ambil nama kelas dari data JSON
-                type_name = item.get("type")
+                type_name = item.get("class_name")
                 
                 # Cari kelas yang sesuai di dalam registry
                 shape_class = cls._shape_registry.get(type_name)
@@ -64,16 +64,27 @@ class SaveLoadManager:
                     # Menggunakan unpacking (**item) untuk memasukkan atribut secara otomatis
                     # Catatan: to_dict() harus konsisten dengan parameter __init__
                     
-                    # Kita hapus kunci 'type' karena tidak ada di __init__
+                    # Kita hapus kunci 'class_name' karena tidak ada di __init__
                     params = item.copy()
-                    params.pop("type", None)
+                    params.pop("class_name", None)
                     
                     # Konversi warna kembali ke tuple (JSON menyimpannya sebagai list)
                     if "color" in params:
                         params["color"] = tuple(params["color"])
                     
-                    # Buat objek asli
-                    obj = shape_class(**params)
+                    # Cek argumen apa saja yang diterima oleh __init__
+                    import inspect
+                    allowed_keys = inspect.signature(shape_class.__init__).parameters.keys()
+                    init_params = {k: v for k, v in params.items() if k in allowed_keys}
+                    
+                    # Buat objek asli dengan argumen yang valid
+                    obj = shape_class(**init_params)
+                    
+                    # Setel sisa atribut yang bukan bagian dari __init__ (misal: angle_x, scale, fill_type)
+                    for k, v in params.items():
+                        if k not in allowed_keys:
+                            setattr(obj, k, v)
+                            
                     reconstructed_shapes.append(obj)
                 else:
                     print(f"[Warning] Tipe objek '{type_name}' tidak terdaftar di registry.")
