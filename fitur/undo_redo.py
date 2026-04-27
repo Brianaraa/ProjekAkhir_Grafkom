@@ -1,4 +1,5 @@
 import copy
+from collections import deque
 
 class UndoRedoManager:
     """
@@ -12,8 +13,8 @@ class UndoRedoManager:
         # 30 berarti user bisa Undo maksimal sampai 30 langkah ke belakang.
         self.max_history = max_history
         
-        self.undo_stack = []
-        self.redo_stack = []
+        self.undo_stack = deque(maxlen=max_history)  # O(1) append & auto-trim
+        self.redo_stack = deque(maxlen=max_history)  # Dibatasi sama seperti undo_stack
 
     def save_state(self, current_shapes):
         """
@@ -23,14 +24,10 @@ class UndoRedoManager:
         # 1. Gunakan deepcopy agar kita merekam 'nilai' objek, bukan alamat memorinya
         state_snapshot = copy.deepcopy(current_shapes)
         
-        # 2. Masukkan ke tumpukan masa lalu
+        # 2. Masukkan ke tumpukan masa lalu (deque auto-trim jika melebihi maxlen)
         self.undo_stack.append(state_snapshot)
         
-        # 3. Manajemen RAM: Jika riwayat melebihi batas, hapus ingatan paling lama (indeks 0)
-        if len(self.undo_stack) > self.max_history:
-            self.undo_stack.pop(0)
-            
-        # 4. Aturan Waktu: Jika user melakukan aksi baru, masa depan (redo) hancur/reset
+        # 3. Aturan Waktu: Jika user melakukan aksi baru, masa depan (redo) hancur/reset
         self.redo_stack.clear()
         
         print(f"[Riwayat] State direkam. Kapasitas Undo: {len(self.undo_stack)}/{self.max_history}")

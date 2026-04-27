@@ -1,12 +1,13 @@
 import pygame
 import sys
 
-# --- Import Core & Fitur  ---
-from core.ui_manager import UIManager
+# --- Import Core & Fitur ---
+from core.constants import *
+from core.ui_manager import UIManager, PALETTE
 from fitur.undo_redo import UndoRedoManager
 from fitur.save_load import SaveLoadManager
 from fitur.algoritma import ManualAlgorithms
-from core.input_handler import InputHandler 
+from core.input_handler import InputHandler
 
 # --- Import Objek ---
 from objek2d.donut import Donut
@@ -16,115 +17,150 @@ from objek3d.bola import Bola
 from objek3d.setengah_bola import SetengahBola
 from objek3d.tabung import Tabung
 from objek3d.kerucut import Kerucut
-
-# Import objek A (Lead Developer)
 from objek2d.bintang import Bintang
 from objek2d.jajar_genjang import JajarGenjang
 from objek3d.balok import Balok
 
-# --- REGISTRY: Alur data untuk fungsionalitas Save/Load ---
-SaveLoadManager.register_shape("Donut", Donut)
-SaveLoadManager.register_shape("Bola", Bola)
-SaveLoadManager.register_shape("SetengahBola", SetengahBola)
-SaveLoadManager.register_shape("BelahKetupat", BelahKetupat)
+# --- Registry Save/Load ---
+SaveLoadManager.register_shape("Donut",             Donut)
+SaveLoadManager.register_shape("Bola",              Bola)
+SaveLoadManager.register_shape("SetengahBola",      SetengahBola)
+SaveLoadManager.register_shape("BelahKetupat",      BelahKetupat)
 SaveLoadManager.register_shape("SetengahLingkaran", SetengahLingkaran)
-SaveLoadManager.register_shape("Kerucut", Kerucut)
-SaveLoadManager.register_shape("Tabung", Tabung)
-SaveLoadManager.register_shape("Bintang", Bintang)
-SaveLoadManager.register_shape("JajarGenjang", JajarGenjang)
-SaveLoadManager.register_shape("Balok", Balok)
+SaveLoadManager.register_shape("Kerucut",           Kerucut)
+SaveLoadManager.register_shape("Tabung",            Tabung)
+SaveLoadManager.register_shape("Bintang",           Bintang)
+SaveLoadManager.register_shape("JajarGenjang",      JajarGenjang)
+SaveLoadManager.register_shape("Balok",             Balok)
+
+# Map nama tool → kelas objek
+TOOL_CLASS_MAP = {
+    "DONUT":             Donut,
+    "BOLA":              Bola,
+    "SETENGAH_BOLA":     SetengahBola,
+    "BELAH_KETUPAT":     BelahKetupat,
+    "SETENGAH_LINGKARAN":SetengahLingkaran,
+    "TABUNG":            Tabung,
+    "KERUCUT":           Kerucut,
+    "BINTANG":           Bintang,
+    "JAJAR_GENJANG":     JajarGenjang,
+    "BALOK":             Balok,
+}
+
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((1000, 700))
-    pygame.display.set_caption("PyPaint - System Architect & Lead Developer Edition")
+    screen  = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+    pygame.display.set_caption("PyPaint — Grafika 2D 3D")
 
-    ui = UIManager(screen)
-    history = UndoRedoManager(max_history=30)
-    
-    # State Variabel (Fokus pada Alur Data)
-    shapes = []
-    current_tool = "SELECT"
-    
-    # Kanvas persistent untuk fitur Flood Fill
-    bg_surface = pygame.Surface((1000, 700))
-    bg_surface.fill((240, 240, 240))
-    
-    # Fitur Coloring: Palet warna sederhana untuk alur data warna
-    palette = [(41, 128, 185), (231, 76, 60), (46, 204, 113), (241, 196, 15), (0, 0, 0)]
-    color_idx = 0
-    current_color = palette[color_idx]
-    
+    ui       = UIManager(screen)
+    history  = UndoRedoManager(max_history=30)
+
+    shapes         = []
+    current_tool   = "SELECT"
     selected_shape = None
-    history.save_state(shapes) # Initial state untuk Stack Undo
-    
-    clock = pygame.time.Clock()
+    palette        = PALETTE[:]
+    color_idx      = 0
+    current_color  = palette[color_idx]
+
+    # Canvas persistent (flood fill background)
+    bg_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+    bg_surface.fill(C_CANVAS_BG)
+
+    history.save_state(shapes)
+    clock   = pygame.time.Clock()
     running = True
 
     while running:
-        mouse_pos = pygame.mouse.get_pos()
-        
+        dt         = clock.tick(60)
+        mouse_pos  = pygame.mouse.get_pos()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-                
-            #  Panggil Input Handler untuk menyambungkan semua klik dan keyboard ke file input_handler.py
+
+            # ── 1. UI Panel events (tombol-tombol di panel) ──
+            ui_actions = ui.handle_ui_event(
+                event, mouse_pos, shapes, selected_shape, current_tool
+            )
+
+            for act in ui_actions:
+                a = act["action"]
+
+                if a == "SET_TOOL":
+                    current_tool = act["value"]
+                    # Update active state tombol Select/Fill
+                    ui.btn_select.active = (current_tool == "SELECT")
+                    ui.btn_fill.active   = (current_tool == "FILL")
+                    for btn, tk in ui.shape_buttons:
+                        btn.active = (tk == current_tool)
+
+                elif a == "SET_COLOR_IDX":
+                    color_idx     = act["value"]
+                    current_color = palette[color_idx]
+                    ui.color_idx  = color_idx
+
+                elif a == "APPLY_SIZE":
+                    if selected_shape:
+                        ui.apply_size_to_shape(selected_shape, act["w"], act["h"], act["d"])
+                        history.save_state(shapes)
+
+                elif a == "RESET":
+                    shapes.clear()
+                    selected_shape = None
+                    bg_surface.fill(C_CANVAS_BG)
+                    history.clear_history()
+                    history.save_state(shapes)
+
+                elif a == "HAPUS":
+                    if selected_shape and selected_shape in shapes:
+                        shapes.remove(selected_shape)
+                        selected_shape = None
+                        history.save_state(shapes)
+
+                elif a == "STATE_CHANGED":
+                    history.save_state(shapes)
+
+            # ── 2. Input Handler (keyboard + canvas mouse) ──
             current_tool, selected_shape, color_idx, current_color = InputHandler.handle_event(
-                event, mouse_pos, screen, ui, shapes, history, 
+                event, mouse_pos, screen, ui, shapes, history,
                 current_tool, selected_shape, palette, color_idx, current_color, bg_surface
             )
 
-        # --- C. RENDERING (Output Visual) ---
+            # Sinkron color_idx ke UI panel
+            ui.color_idx = color_idx
+
+            # Sinkron input ukuran jika objek terpilih berubah
+            if selected_shape:
+                ui.update_inputs_from_shape(selected_shape)
+
+        # ── 3. Tick update (cursor blink TextInput) ──
+        ui.update(dt)
+
+        # ══════════════════════════════════════════════════
+        # RENDERING
+        # ══════════════════════════════════════════════════
+
+        # 1. Latar belakang
         screen.blit(bg_surface, (0, 0))
+
+        # 2. UI layout (navbar + panel + canvas)
         ui.draw_layout()
-        
-        # Area Clip Canvas
+
+        # 3. Gambar objek (clip ke canvas agar tidak meluber ke panel)
         screen.set_clip(ui.canvas_rect)
         for shape in shapes:
             shape.draw(screen)
         screen.set_clip(None)
-        
-        # Render UI Text & Instructions
-        title = ui.header_font.render("LEAD DEVELOPER PANEL", True, (0, 0, 0))
-        screen.blit(title, (20, 20))
-        
-        instructions = [
-            f"Active Tool: {current_tool}",
-            f"Active Color: {current_color}",
-            "",
-            "[1] Select Mode",
-            "[2] Donut 2D | [F1] Bintang",
-            "[3] Bola 3D | [F2] Jajar Genjang",
-            "[4] Hemisphere 3D | [F3] Balok",
-            "[5] Belah Ketupat",
-            "[6] Semicircle",
-            "[7] Tabung 3D",
-            "[8] Kerucut 3D",
-            "[9] Fill Area (Manual)",
-            "",
-            "Logic & Transform:",
-            "- Drag/Drop: Translasi X/Y",
-            "- C: Cycle Color",
-            "- +/-: Scaling Objek",
-            "- </>: Move Z-Axis",
-            "- WASDQE: Rotasi 3D",
-            "- Del: Remove Object",
-            "",
-            "Data Persistence:",
-            "- Ctrl+Z/Y: Undo/Redo",
-            "- Ctrl+S/O: Save/Load"
-        ]
-        
-        for i, text in enumerate(instructions):
-            surf = ui.font.render(text, True, (50, 50, 50))
-            screen.blit(surf, (20, 60 + (i * 22)))
 
-        ui.draw_status_info(mouse_pos)
+        # 4. Status bar kecil di bawah canvas
+        ui.draw_status_info(mouse_pos, current_tool, selected_shape)
+
         pygame.display.flip()
-        clock.tick(60)
 
     pygame.quit()
     sys.exit()
+
 
 if __name__ == "__main__":
     main()

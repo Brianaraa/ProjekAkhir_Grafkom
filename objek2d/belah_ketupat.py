@@ -96,12 +96,27 @@ class BelahKetupat(BaseShape):
             pygame.draw.rect(surface, (0, 0, 255), (int(c[0]) - 3, int(c[1]) - 3, 6, 6))
 
     def is_clicked(self, mouse_pos):
-        """Deteksi klik menggunakan Manhattan Distance."""
+        """Deteksi klik dengan koreksi angle_z (inverse transform)."""
         mx, my = mouse_pos
-        dx = abs(mx - self.x)
-        dy = abs(my - self.y)
-        # Rumus Belah Ketupat: (|dx|/a) + (|dy|/b) <= 1
-        return (dx / (self.base_width * self.scale / 2) + dy / (self.base_height * self.scale / 2)) <= 1
+        # Translate ke koordinat lokal relatif pusat objek
+        dx = mx - self.x
+        dy = -(my - self.y)  # Balik Y sesuai konvensi project_3d_to_2d
+        # Inverse proyeksi perspektif
+        fov = 400
+        factor = fov / (fov + self.z) if (fov + self.z) != 0 else 1
+        dx /= factor
+        dy /= factor
+        # Rotasi balik sebesar -angle_z
+        cos_a = math.cos(-self.angle_z)
+        sin_a = math.sin(-self.angle_z)
+        local_x = dx * cos_a - dy * sin_a
+        local_y = dx * sin_a + dy * cos_a
+        # Rumus Belah Ketupat: (|lx|/a) + (|ly|/b) <= 1
+        a = self.base_width * self.scale / 2
+        b = self.base_height * self.scale / 2
+        if a == 0 or b == 0:
+            return False
+        return (abs(local_x) / a + abs(local_y) / b) <= 1
 
     def to_dict(self):
         """Export data untuk sistem Save/Load JSON."""

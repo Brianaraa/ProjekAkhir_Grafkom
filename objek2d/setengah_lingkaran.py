@@ -101,11 +101,24 @@ class SetengahLingkaran(BaseShape):
             pygame.draw.rect(surface, (0, 0, 255), (int(c[0]) - 3, int(c[1]) - 3, 6, 6))
 
     def is_clicked(self, mouse_pos):
-        """Deteksi klik: dalam radius DAN di atas pusat (area kubah)."""
+        """Deteksi klik dengan koreksi angle_z (inverse transform), sama seperti BelahKetupat."""
         mx, my = mouse_pos
+        # Translate ke koordinat lokal relatif pusat objek
+        dx = mx - self.x
+        dy = -(my - self.y)  # Balik Y sesuai konvensi project_3d_to_2d
+        # Inverse proyeksi perspektif
+        fov = 400
+        factor = fov / (fov + self.z) if (fov + self.z) != 0 else 1
+        dx /= factor
+        dy /= factor
+        # Rotasi balik sebesar -angle_z
+        cos_a = math.cos(-self.angle_z)
+        sin_a = math.sin(-self.angle_z)
+        local_x = dx * cos_a - dy * sin_a
+        local_y = dx * sin_a + dy * cos_a
+        # Dalam ruang lokal: kubah adalah setengah lingkaran di sisi local_y >= 0
         r = self.base_radius * self.scale
-        dist = math.hypot(mx - self.x, my - self.y)
-        return dist <= r and my <= self.y  # FIX: <= bukan >= karena kubah ke atas
+        return math.hypot(local_x, local_y) <= r and local_y >= 0
 
     def to_dict(self):
         """Export data untuk sistem Save/Load JSON."""

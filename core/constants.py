@@ -1,18 +1,67 @@
 # File: core/constants.py
 
 # --- UKURAN LAYAR ---
-WINDOW_WIDTH = 1000
-WINDOW_HEIGHT = 700
+WINDOW_WIDTH  = 1280
+WINDOW_HEIGHT = 720
 
-# --- UKURAN PANEL UI ---
-TOOLBAR_WIDTH = 200
-STATUS_HEIGHT = 30
-CANVAS_WIDTH = WINDOW_WIDTH - TOOLBAR_WIDTH
-CANVAS_HEIGHT = WINDOW_HEIGHT - STATUS_HEIGHT
+# --- LAYOUT AREAS ---
+NAVBAR_HEIGHT        = 40
+LEFT_PANEL_WIDTH     = 250
+TOOLS_PANEL_WIDTH    = 215
+CONTROL_PANEL_WIDTH  = 215
 
-# --- PALET WARNA (RGB) ---
-COLOR_BG_UI = (240, 240, 240)      # Abu-abu untuk menu
-COLOR_CANVAS = (255, 255, 255)     # Putih untuk area gambar
-COLOR_BORDER = (200, 200, 200)     # Garis batas
-COLOR_TEXT = (50, 50, 50)          # Warna teks
-COLOR_STATUS = (220, 220, 220)     # Abu-abu gelap untuk status bar
+CANVAS_X      = LEFT_PANEL_WIDTH
+CANVAS_Y      = NAVBAR_HEIGHT
+CANVAS_WIDTH  = WINDOW_WIDTH - LEFT_PANEL_WIDTH - TOOLS_PANEL_WIDTH - CONTROL_PANEL_WIDTH  # 600
+CANVAS_HEIGHT = WINDOW_HEIGHT - NAVBAR_HEIGHT   # 680
+
+# Legacy aliases (dipakai beberapa file lama)
+TOOLBAR_WIDTH  = LEFT_PANEL_WIDTH
+STATUS_HEIGHT  = 0
+
+# --- WARNA TEMA ---
+# Navbar
+C_NAVBAR      = (26, 26, 26)
+C_NAVBAR_TXT  = (255, 255, 255)
+
+# Panel
+C_PANEL_BG    = (245, 245, 245)
+C_PANEL_SECT  = (232, 232, 232)
+C_PANEL_HEAD  = (220, 220, 220)
+C_PANEL_BORD  = (205, 205, 205)
+
+# Canvas
+C_CANVAS_BG   = (255, 255, 255)
+C_CANVAS_GRID = (220, 220, 220)
+
+# Tombol normal
+C_BTN_NORMAL  = (255, 255, 255)
+C_BTN_NRM_TXT = (50, 50, 50)
+C_BTN_HOVER   = (240, 240, 240)
+C_BTN_BORDER  = (200, 200, 200)
+
+# Tombol aktif
+C_BTN_ACTIVE  = (30, 30, 30)
+C_BTN_ACT_TXT = (255, 255, 255)
+
+# Aksen biru
+C_ACCENT      = (59, 130, 246)
+C_ACCENT_HVR  = (37, 99, 235)
+C_ACCENT_TXT  = (255, 255, 255)
+
+# Teks
+C_TEXT        = (50, 50, 50)
+C_TEXT_LIGHT  = (130, 130, 130)
+
+# Misc
+C_WHITE       = (255, 255, 255)
+C_BLACK       = (0, 0, 0)
+C_RED         = (239, 68, 68)
+C_BLUE        = (59, 130, 246)
+
+# --- Legacy (kompatibilitas dengan objek 2D/3D) ---
+COLOR_BG_UI   = C_PANEL_BG
+COLOR_CANVAS  = C_CANVAS_BG
+COLOR_BORDER  = C_PANEL_BORD
+COLOR_TEXT    = C_TEXT
+COLOR_STATUS  = C_PANEL_SECT

@@ -1,6 +1,7 @@
 import pygame
 import math
 from core.base import BaseShape
+from core.math_utils import rotate_3d, project_3d_to_2d
 
 class Balok(BaseShape):
     """
@@ -31,31 +32,15 @@ class Balok(BaseShape):
         ]
         
         projected = []
-        fov = 400
         
         for v in vertices:
             vx, vy, vz = v
             
-            # Rotasi X
-            new_y = vy * math.cos(self.angle_x) - vz * math.sin(self.angle_x)
-            new_z = vy * math.sin(self.angle_x) + vz * math.cos(self.angle_x)
-            vy, vz = new_y, new_z
+            # Gunakan math_utils.rotate_3d (konsisten dengan objek 3D lainnya)
+            rx, ry, rz = rotate_3d(vx, vy, vz, self.angle_x, self.angle_y, self.angle_z)
             
-            # Rotasi Y
-            new_x = vx * math.cos(self.angle_y) + vz * math.sin(self.angle_y)
-            new_z = -vx * math.sin(self.angle_y) + vz * math.cos(self.angle_y)
-            vx, vz = new_x, new_z
-            
-            # Rotasi Z
-            new_x_z = vx * math.cos(self.angle_z) - vy * math.sin(self.angle_z)
-            new_y_z = vx * math.sin(self.angle_z) + vy * math.cos(self.angle_z)
-            vx, vy = new_x_z, new_y_z
-            
-            # Proyeksi
-            z_real = self.z + vz
-            factor = fov / (fov + z_real) if (fov + z_real) != 0 else 1
-            px = self.x + vx * factor
-            py = self.y + vy * factor
+            # Gunakan math_utils.project_3d_to_2d (Y dibalik — konsisten dengan Bola/Tabung/Kerucut)
+            px, py = project_3d_to_2d(rx, ry, rz + self.z, self.x, self.y)
             projected.append((int(px), int(py)))
             
         # Draw edges
