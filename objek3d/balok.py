@@ -35,6 +35,7 @@ class Balok(BaseShape):
         
         for v in vertices:
             vx, vy, vz = v
+            vx, vy, vz = self.apply_mirroring(vx, vy, vz)
             
             # Gunakan math_utils.rotate_3d (konsisten dengan objek 3D lainnya)
             rx, ry, rz = rotate_3d(vx, vy, vz, self.angle_x, self.angle_y, self.angle_z)

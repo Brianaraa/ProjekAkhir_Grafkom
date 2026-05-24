@@ -23,12 +23,16 @@ class JajarGenjang(BaseShape):
         hh = current_h / 2
         ho = current_off / 2
 
-        points = [
-            (self.x - hw + ho, self.y - hh),
-            (self.x + hw + ho, self.y - hh),
-            (self.x + hw - ho, self.y + hh),
-            (self.x - hw - ho, self.y + hh)
+        local_pts = [
+            (-hw + ho, -hh, 0),
+            (hw + ho, -hh, 0),
+            (hw - ho, hh, 0),
+            (-hw - ho, hh, 0)
         ]
+        points = []
+        for lx, ly, lz in local_pts:
+            lx, ly, _ = self.apply_mirroring(lx, ly, 0)
+            points.append((self.x + lx, self.y + ly))
 
         pygame.draw.polygon(surface, self.color, points)
         pygame.draw.polygon(surface, (0, 0, 0), points, 1)
@@ -54,13 +58,17 @@ class JajarGenjang(BaseShape):
         hh = current_h / 2
         ho = current_off / 2
 
-        # Menggunakan algoritma Point-in-Polygon (Ray Casting) untuk presisi
-        points = [
-            (self.x - hw + ho, self.y - hh),
-            (self.x + hw + ho, self.y - hh),
-            (self.x + hw - ho, self.y + hh),
-            (self.x - hw - ho, self.y + hh)
+        # Menggunakan algoritma Point-in-Polygon (Ray Casting) dengan koordinat yang dicerminkan
+        local_pts = [
+            (-hw + ho, -hh, 0),
+            (hw + ho, -hh, 0),
+            (hw - ho, hh, 0),
+            (-hw - ho, hh, 0)
         ]
+        points = []
+        for lx, ly, lz in local_pts:
+            lx, ly, _ = self.apply_mirroring(lx, ly, 0)
+            points.append((self.x + lx, self.y + ly))
         
         inside = False
         n = len(points)

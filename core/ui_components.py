@@ -42,23 +42,30 @@ class Button:
 class TextInput:
     """Input teks numerik sederhana."""
 
-    def __init__(self, x, y, w, h, label="", value="0"):
+    def __init__(self, x, y, w, h, label="", value="0", numeric=True):
         self.rect   = pygame.Rect(x, y, w, h)
         self.label  = label
         self.text   = str(value)
         self.active = False
         self._blink = True
         self._timer = 0
+        self.numeric = numeric
 
     def set_value(self, val):
-        v = int(val) if isinstance(val, float) and val == int(val) else val
-        self.text = str(v)
+        if self.numeric:
+            v = int(val) if isinstance(val, float) and val == int(val) else val
+            self.text = str(v)
+        else:
+            self.text = str(val)
 
     def get_value(self):
-        try:
-            return int(self.text)
-        except ValueError:
-            return 0
+        if self.numeric:
+            try:
+                return int(self.text)
+            except ValueError:
+                return 0
+        else:
+            return self.text
 
     def handle_event(self, event, mouse_pos):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -66,15 +73,24 @@ class TextInput:
             return None
         if self.active and event.type == pygame.KEYDOWN:
             if event.key == pygame.K_BACKSPACE:
-                self.text = self.text[:-1] or "0"
+                if self.numeric:
+                    self.text = self.text[:-1] or "0"
+                else:
+                    self.text = self.text[:-1]
             elif event.key == pygame.K_RETURN:
                 self.active = False
                 return self.get_value()
-            elif event.unicode.isdigit() and len(self.text) < 5:
-                if self.text == "0":
-                    self.text = event.unicode
+            else:
+                if self.numeric:
+                    if event.unicode.isdigit() and len(self.text) < 5:
+                        if self.text == "0":
+                            self.text = event.unicode
+                        else:
+                            self.text += event.unicode
                 else:
-                    self.text += event.unicode
+                    # Izinkan pengetikan huruf/karakter umum untuk teks
+                    if event.unicode and len(self.text) < 30 and event.key not in (pygame.K_ESCAPE, pygame.K_TAB):
+                        self.text += event.unicode
         return None
 
     def update(self, dt_ms):

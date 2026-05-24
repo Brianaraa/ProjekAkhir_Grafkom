@@ -16,6 +16,7 @@ from objek3d.kerucut import Kerucut
 from objek2d.bintang import Bintang
 from objek2d.jajar_genjang import JajarGenjang
 from objek3d.balok import Balok
+from objek2d.text_shape import TextShape
 
 class InputHandler:
     """
@@ -78,6 +79,14 @@ class InputHandler:
                     color_idx = (color_idx + 1) % len(palette)
                     current_color = palette[color_idx]
                     selected_shape.set_color(current_color)
+                    state_changed = True
+
+                # Fitur Mirroring (M/N)
+                elif event.key == pygame.K_m:
+                    selected_shape.flip_x = not selected_shape.flip_x
+                    state_changed = True
+                elif event.key == pygame.K_n:
+                    selected_shape.flip_y = not selected_shape.flip_y
                     state_changed = True
 
                 # Fitur Scaling (Ubah Ukuran Fisik) 
@@ -183,6 +192,7 @@ class InputHandler:
                     elif current_tool == "BINTANG": new_obj = Bintang(x, y, z, current_color)
                     elif current_tool == "JAJAR_GENJANG": new_obj = JajarGenjang(x, y, z, current_color)
                     elif current_tool == "BALOK": new_obj = Balok(x, y, z, current_color)
+                    elif current_tool == "TEXT": new_obj = TextShape(x, y, z, current_color)
                     
                     if new_obj:
                         shapes.append(new_obj)

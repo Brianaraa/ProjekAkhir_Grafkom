@@ -40,6 +40,7 @@ class SetengahLingkaran(BaseShape):
         # 2. Rotasi Z + Proyeksi Perspektif (sama persis dengan belah_ketupat)
         projected_points = []
         for px, py, pz in local_points:
+            px, py, pz = self.apply_mirroring(px, py, pz)
             # 2a. Rotasi Z saja (angle_x dan angle_y dikunci 0)
             rx, ry, rz = rotate_3d(px, py, pz, 0, 0, self.angle_z)
             # 2b. Proyeksi Perspektif (Ditambah self.z agar fitur </> berfungsi)

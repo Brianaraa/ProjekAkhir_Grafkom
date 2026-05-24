@@ -18,6 +18,10 @@ class BaseShape(ABC):
         self.scale = 1.0
         self.is_selected = False # Penting untuk menentukan objek mana yang akan di-Coloring
 
+        # Fitur Mirroring (Pencerminan)
+        self.flip_x = False
+        self.flip_y = False
+
     @abstractmethod
     def draw(self, surface):
         """Wajib diimplementasikan oleh jatah objek B (Donut, Bola, 1/2 Bola)"""
@@ -44,6 +48,14 @@ class BaseShape(ABC):
         """Implementasi Fitur Coloring (Tugas B)"""
         self.color = new_color
 
+    def apply_mirroring(self, px, py, pz=0):
+        """Pencerminan titik koordinat lokal sebelum rotasi/proyeksi"""
+        if getattr(self, "flip_x", False):
+            px = -px
+        if getattr(self, "flip_y", False):
+            py = -py
+        return px, py, pz
+
     # --- SYSTEM LOGIC: PERSISTENSI DATA (Jatah B - Save/Load) ---
 
     def to_dict(self):
@@ -57,5 +69,7 @@ class BaseShape(ABC):
             "y": self.y,
             "z": self.z,
             "color": list(self.color) if isinstance(self.color, tuple) else self.color,
-            "scale": self.scale
+            "scale": self.scale,
+            "flip_x": self.flip_x,
+            "flip_y": self.flip_y
         }

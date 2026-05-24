@@ -25,6 +25,7 @@ class Tabung(BaseShape):
 
     def _apply_transforms(self, vx, vy, vz):
         """Transformasi 3D ke 2D menggunakan Math Utils."""
+        vx, vy, vz = self.apply_mirroring(vx, vy, vz)
         
         # 1. Gunakan fungsi rotate_3d dari math_utils
         rx, ry, rz = rotate_3d(vx, vy, vz, self.angle_x, self.angle_y, self.angle_z)

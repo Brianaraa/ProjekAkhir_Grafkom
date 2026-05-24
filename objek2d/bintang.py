@@ -22,8 +22,11 @@ class Bintang(BaseShape):
             # Mulai dari atas: -90 derajat
             angle = math.radians(i * 36 - 90)
             r = current_outer if i % 2 == 0 else current_inner
-            px = self.x + r * math.cos(angle)
-            py = self.y + r * math.sin(angle)
+            lx = r * math.cos(angle)
+            ly = r * math.sin(angle)
+            lx, ly, _ = self.apply_mirroring(lx, ly, 0)
+            px = self.x + lx
+            py = self.y + ly
             points.append((int(px), int(py)))
 
         pygame.draw.polygon(surface, self.color, points)

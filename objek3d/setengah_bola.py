@@ -18,6 +18,7 @@ class SetengahBola(BaseShape):
 
     def _apply_transforms(self, vx, vy, vz):
         """Rotasi 3D + Proyeksi Perspektif menggunakan Math Utils."""
+        vx, vy, vz = self.apply_mirroring(vx, vy, vz)
         rx, ry, rz = rotate_3d(vx, vy, vz, self.angle_x, self.angle_y, self.angle_z)
         px, py = project_3d_to_2d(rx, ry, rz + self.z, self.x, self.y)
         return (int(px), int(py))

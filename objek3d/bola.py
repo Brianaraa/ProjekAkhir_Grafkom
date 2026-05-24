@@ -18,6 +18,7 @@ class Bola(BaseShape):
 
     def _project_vertex(self, vx, vy, vz):
         """Rotasi + Proyeksi Perspektif satu vertex ke koordinat layar."""
+        vx, vy, vz = self.apply_mirroring(vx, vy, vz)
         rx, ry, rz = rotate_3d(vx, vy, vz, self.angle_x, self.angle_y, self.angle_z)
         fov = 400
         z_real = self.z + rz

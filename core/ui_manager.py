@@ -14,6 +14,7 @@ SHAPES_2D = [
     ("Setengah Lingkaran","SETENGAH_LINGKARAN"),
     ("Bintang",           "BINTANG"),
     ("Jajar Genjang",     "JAJAR_GENJANG"),
+    ("Teks",              "TEXT"),
 ]
 SHAPES_3D = [
     ("Bola",              "BOLA"),
@@ -38,6 +39,7 @@ SHORTCUTS = [
     ("+/-",      "Skala"),
     ("</> ",     "Geser Z"),
     ("WASDQE",   "Rotasi 3D"),
+    ("M/N",      "Mirror H/V"),
     ("Del",      "Hapus"),
     ("Ctrl+Z/Y", "Undo/Redo"),
     ("Ctrl+S/O", "Save/Load"),
@@ -128,13 +130,15 @@ class UIManager:
         tw  = TOOLS_PANEL_WIDTH - 20
         y   = NAVBAR_HEIGHT + 36
 
-        # ── Ukuran Bentuk ──
+        # ── Ukuran & Konten Bentuk ──
         y += 30   # section header space
         self.inp_lebar   = TextInput(tx, y + 18, tw, 28, "Lebar (W)")
         y += 60
         self.inp_tinggi  = TextInput(tx, y + 18, tw, 28, "Tinggi (H)")
         y += 60
         self.inp_depth   = TextInput(tx, y + 18, tw, 28, "Kedalaman (Z)")
+        y += 60
+        self.inp_teks    = TextInput(tx, y + 18, tw, 28, "Isi Teks", value="Teks Baru", numeric=False)
         y += 60
         self.btn_terapkan_ukuran = Button(tx, y, tw, 28, "Terapkan Ukuran", accent=True)
         y += 44
@@ -193,17 +197,21 @@ class UIManager:
         self.btn_perbesar = Button(cx, y, cw, 28, "＋  Perbesar", accent=True)
         y += 34
         self.btn_perkecil = Button(cx, y, cw, 28, "－  Perkecil")
+        y += 34
+        hw = (cw - 6) // 2
+        self.btn_mirror_h = Button(cx, y, hw, 28, "↔ Mirror H")
+        self.btn_mirror_v = Button(cx + hw + 6, y, hw, 28, "↕ Mirror V")
 
     # ══════════════════════════════════════════════════════════
     #  DRAW
     # ══════════════════════════════════════════════════════════
 
-    def draw_layout(self):
+    def draw_layout(self, selected_shape=None):
         mp = pygame.mouse.get_pos()
         self._draw_navbar()
         self._draw_canvas_bg()
         self._draw_left_panel(mp)
-        self._draw_tools_panel(mp)
+        self._draw_tools_panel(mp, selected_shape)
         self._draw_control_panel(mp)
 
     def _draw_navbar(self):
@@ -252,7 +260,7 @@ class UIManager:
         self.btn_reset.draw(self.screen, self.font_btn, mp)
         self.btn_hapus.draw(self.screen, self.font_btn, mp)
 
-    def _draw_tools_panel(self, mp):
+    def _draw_tools_panel(self, mp, selected_shape=None):
         tx = self.tools_rect.x
         tw = TOOLS_PANEL_WIDTH
         draw_panel_bg(self.screen, tx, NAVBAR_HEIGHT, tw, CANVAS_HEIGHT)
@@ -260,11 +268,17 @@ class UIManager:
         y = NAVBAR_HEIGHT
         y = draw_section_header(self.screen, self.font_sect, tx, y, tw, "Tools")
 
-        # ── Ukuran Bentuk ──
-        y = draw_section_header(self.screen, self.font_sect, tx, y, tw, "Ukuran Bentuk")
+        # ── Ukuran & Konten Bentuk ──
+        y = draw_section_header(self.screen, self.font_sect, tx, y, tw, "Ukuran & Konten")
         self.inp_lebar.draw(self.screen, self.font_md, self.font_sm, mp)
         self.inp_tinggi.draw(self.screen, self.font_md, self.font_sm, mp)
         self.inp_depth.draw(self.screen, self.font_md, self.font_sm, mp)
+        
+        # Tampilkan input teks konten hanya jika objek terpilih berjenis TextShape
+        from objek2d.text_shape import TextShape
+        if isinstance(selected_shape, TextShape):
+            self.inp_teks.draw(self.screen, self.font_md, self.font_sm, mp)
+
         self.btn_terapkan_ukuran.draw(self.screen, self.font_btn, mp)
 
         # ── Warna ──
@@ -315,11 +329,13 @@ class UIManager:
         self.btn_t_down.draw(self.screen, self.font_btn, mp)
         self.btn_t_right.draw(self.screen, self.font_btn, mp)
 
-        # ── Skala ──
+        # ── Skala & Mirroring ──
         y = self.btn_perbesar.rect.y - 32
-        draw_section_header(self.screen, self.font_sect, cx, y, cw, "Skala")
+        draw_section_header(self.screen, self.font_sect, cx, y, cw, "Skala & Mirror")
         self.btn_perbesar.draw(self.screen, self.font_btn, mp)
         self.btn_perkecil.draw(self.screen, self.font_btn, mp)
+        self.btn_mirror_h.draw(self.screen, self.font_btn, mp)
+        self.btn_mirror_v.draw(self.screen, self.font_btn, mp)
 
         # ── Keyboard Shortcuts ──
         sy = self.btn_perkecil.rect.bottom + 14
@@ -408,16 +424,20 @@ class UIManager:
                 if selected_shape:
                     selected_shape.set_color(self.palette[i])
 
-        # ── Terapkan Ukuran ──
+        # ── Terapkan Ukuran & Konten ──
         if self.btn_terapkan_ukuran.is_clicked(mouse_pos, event):
             if selected_shape:
                 w = self.inp_lebar.get_value()
                 h = self.inp_tinggi.get_value()
                 d = self.inp_depth.get_value()
                 actions.append({"action": "APPLY_SIZE", "w": w, "h": h, "d": d})
+                from objek2d.text_shape import TextShape
+                if isinstance(selected_shape, TextShape):
+                    selected_shape.text = self.inp_teks.get_value()
+                    actions.append({"action": "STATE_CHANGED"})
 
         # ── TextInput events ──
-        for inp in [self.inp_lebar, self.inp_tinggi, self.inp_depth, self.inp_outline_w]:
+        for inp in [self.inp_lebar, self.inp_tinggi, self.inp_depth, self.inp_outline_w, self.inp_teks]:
             inp.handle_event(event, mouse_pos)
 
         # ── Kontrol Mouse Mode ──
@@ -455,12 +475,20 @@ class UIManager:
             selected_shape.translate(MOVE, 0)
             actions.append({"action": "STATE_CHANGED"})
 
-        # ── Skala ──
+        # ── Skala & Mirroring ──
         if self.btn_perbesar.is_clicked(mouse_pos, event) and selected_shape:
             selected_shape.scale = round(selected_shape.scale + 0.1, 2)
             actions.append({"action": "STATE_CHANGED"})
         if self.btn_perkecil.is_clicked(mouse_pos, event) and selected_shape:
             selected_shape.scale = round(max(0.2, selected_shape.scale - 0.1), 2)
+            actions.append({"action": "STATE_CHANGED"})
+
+        # Mirroring Cermin
+        if self.btn_mirror_h.is_clicked(mouse_pos, event) and selected_shape:
+            selected_shape.flip_x = not selected_shape.flip_x
+            actions.append({"action": "STATE_CHANGED"})
+        if self.btn_mirror_v.is_clicked(mouse_pos, event) and selected_shape:
+            selected_shape.flip_y = not selected_shape.flip_y
             actions.append({"action": "STATE_CHANGED"})
 
         return actions

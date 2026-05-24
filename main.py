@@ -20,6 +20,7 @@ from objek3d.kerucut import Kerucut
 from objek2d.bintang import Bintang
 from objek2d.jajar_genjang import JajarGenjang
 from objek3d.balok import Balok
+from objek2d.text_shape import TextShape
 
 # --- Registry Save/Load ---
 SaveLoadManager.register_shape("Donut",             Donut)
@@ -32,6 +33,7 @@ SaveLoadManager.register_shape("Tabung",            Tabung)
 SaveLoadManager.register_shape("Bintang",           Bintang)
 SaveLoadManager.register_shape("JajarGenjang",      JajarGenjang)
 SaveLoadManager.register_shape("Balok",             Balok)
+SaveLoadManager.register_shape("TextShape",         TextShape)
 
 # Map nama tool → kelas objek
 TOOL_CLASS_MAP = {
@@ -45,6 +47,7 @@ TOOL_CLASS_MAP = {
     "BINTANG":           Bintang,
     "JAJAR_GENJANG":     JajarGenjang,
     "BALOK":             Balok,
+    "TEXT":              TextShape,
 }
 
 
@@ -145,7 +148,7 @@ def main():
         screen.blit(bg_surface, (0, 0))
 
         # 2. UI layout (navbar + panel + canvas)
-        ui.draw_layout()
+        ui.draw_layout(selected_shape)
 
         # 3. Gambar objek (clip ke canvas agar tidak meluber ke panel)
         screen.set_clip(ui.canvas_rect)
