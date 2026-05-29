@@ -68,6 +68,7 @@ class InputHandler:
             elif event.key == pygame.K_F1: current_tool = "BINTANG"
             elif event.key == pygame.K_F2: current_tool = "JAJAR_GENJANG"
             elif event.key == pygame.K_F3: current_tool = "BALOK"
+            elif event.key == pygame.K_F4: current_tool = "TEXT"
 
             # --- 2. OBJECT MANIPULATION (HANYA jalan jika ada objek terpilih) ---
             elif selected_shape:

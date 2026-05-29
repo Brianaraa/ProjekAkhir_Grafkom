@@ -34,8 +34,9 @@ PALETTE = [
 
 SHORTCUTS = [
     ("1",        "Mode Select"),
-    ("2-8/F1-F3","Pilih Objek"),
+    ("2-8/F1-F4","Pilih Objek"),
     ("C",        "Ganti Warna"),
+    ("P",        "Ganti Arsiran"),
     ("+/-",      "Skala"),
     ("</> ",     "Geser Z"),
     ("WASDQE",   "Rotasi 3D"),
@@ -516,7 +517,7 @@ class UIManager:
 
     def update(self, dt_ms):
         """Tick update untuk animasi TextInput (cursor blink)."""
-        for inp in [self.inp_lebar, self.inp_tinggi, self.inp_depth, self.inp_outline_w]:
+        for inp in [self.inp_lebar, self.inp_tinggi, self.inp_depth, self.inp_outline_w, self.inp_teks]:
             inp.update(dt_ms)
 
     # Compat: dipanggil dari kode lama
