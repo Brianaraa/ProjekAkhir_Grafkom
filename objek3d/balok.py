@@ -6,7 +6,7 @@ from core.math_utils import rotate_3d, project_3d_to_2d
 class Balok(BaseShape):
     """
     Implementasi Objek 3D Balok - Dirancang oleh Lead Developer (A).
-    Menerapkan rotasi 3D dan proyeksi perspektif.
+    Menerapkan rotasi 3D, skewing, dan proyeksi perspektif.
     """
     def __init__(self, x, y, z, color, width=80, height=50, depth=60):
         super().__init__(x, y, z, color)
@@ -36,6 +36,7 @@ class Balok(BaseShape):
         for v in vertices:
             vx, vy, vz = v
             vx, vy, vz = self.apply_mirroring(vx, vy, vz)
+            vx, vy, vz = self.apply_skew(vx, vy, vz)
             
             # Gunakan math_utils.rotate_3d (konsisten dengan objek 3D lainnya)
             rx, ry, rz = rotate_3d(vx, vy, vz, self.angle_x, self.angle_y, self.angle_z)
@@ -45,14 +46,15 @@ class Balok(BaseShape):
             projected.append((int(px), int(py)))
             
         # Draw edges
-        edges = [
-            (0,1), (1,2), (2,3), (3,0), # Back face
-            (4,5), (5,6), (6,7), (7,4), # Front face
-            (0,4), (1,5), (2,6), (3,7)  # Connecting edges
-        ]
-        
-        for e in edges:
-            pygame.draw.line(surface, self.color, projected[e[0]], projected[e[1]], 2)
+        if self.show_outline:
+            edges = [
+                (0,1), (1,2), (2,3), (3,0), # Back face
+                (4,5), (5,6), (6,7), (7,4), # Front face
+                (0,4), (1,5), (2,6), (3,7)  # Connecting edges
+            ]
+            t = max(1, self.outline_width)
+            for e in edges:
+                pygame.draw.line(surface, self.color, projected[e[0]], projected[e[1]], t)
             
         if self.is_selected:
             min_x = min([p[0] for p in projected])
@@ -60,10 +62,13 @@ class Balok(BaseShape):
             min_y = min([p[1] for p in projected])
             max_y = max([p[1] for p in projected])
             
-            pygame.draw.rect(surface, (255, 0, 0), (min_x, min_y, max_x - min_x, max_y - min_y), 1)
+            rx, ry = int(min_x) - 2, int(min_y) - 2
+            rw, rh = int(max_x - min_x) + 4, int(max_y - min_y) + 4
+            pygame.draw.rect(surface, (59, 130, 246), (rx, ry, rw, rh), 2)
             
-            for p in [(min_x, min_y), (max_x, min_y), (min_x, max_y), (max_x, max_y)]:
-                pygame.draw.rect(surface, (0, 0, 255), (p[0] - 3, p[1] - 3, 6, 6))
+            for p in [(rx, ry), (rx + rw, ry), (rx, ry + rh), (rx + rw, ry + rh)]:
+                pygame.draw.rect(surface, (255, 255, 255), (p[0] - 3, p[1] - 3, 7, 7))
+                pygame.draw.rect(surface, (59, 130, 246), (p[0] - 3, p[1] - 3, 7, 7), 1)
 
     def is_clicked(self, mouse_pos):
         mx, my = mouse_pos

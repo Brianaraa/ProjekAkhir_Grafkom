@@ -37,13 +37,12 @@ class SetengahLingkaran(BaseShape):
             py = -r * math.sin(theta)  # Negatif agar kubah menghadap ke atas
             local_points.append((px, py, 0))
 
-        # 2. Rotasi Z + Proyeksi Perspektif (sama persis dengan belah_ketupat)
+        # 2. Transform pipeline: Mirroring → Skew → Rotasi Z → Proyeksi
         projected_points = []
         for px, py, pz in local_points:
             px, py, pz = self.apply_mirroring(px, py, pz)
-            # 2a. Rotasi Z saja (angle_x dan angle_y dikunci 0)
+            px, py, pz = self.apply_skew(px, py, pz)
             rx, ry, rz = rotate_3d(px, py, pz, 0, 0, self.angle_z)
-            # 2b. Proyeksi Perspektif (Ditambah self.z agar fitur </> berfungsi)
             fx, fy = project_3d_to_2d(rx, ry, rz + self.z, self.x, self.y)
             projected_points.append((fx, fy))
 
@@ -72,34 +71,25 @@ class SetengahLingkaran(BaseShape):
             surface.blit(temp_surface, (min_x, min_y))
 
         # 4. PROSES OUTLINE (FULL MANUAL BRESENHAM)
-        # Gambar lengkungan (menyambungkan 31 titik satu per satu)
-        for i in range(len(projected_points) - 1):
+        if self.show_outline:
+            for i in range(len(projected_points) - 1):
+                ManualAlgorithms.draw_line_bresenham(
+                    surface, self.outline_color, projected_points[i], projected_points[i + 1], self.outline_width
+                )
             ManualAlgorithms.draw_line_bresenham(
-                surface, self.outline_color, projected_points[i], projected_points[i + 1]
+                surface, self.outline_color, projected_points[-1], projected_points[0], self.outline_width
             )
-
-        # Gambar garis diameter (penutup bawah) secara manual
-        ManualAlgorithms.draw_line_bresenham(
-            surface, self.outline_color, projected_points[-1], projected_points[0]
-        )
 
         # 5. Indikator Seleksi (Bounding Box)
         if self.is_selected:
             self._draw_selection_style(surface, min_x, min_y, surf_w, surf_h)
 
     def _draw_selection_style(self, surface, min_x, min_y, w, h):
-        """Visualisasi seleksi dinamis (sama seperti belah_ketupat)."""
-        rect_x, rect_y = int(min_x), int(min_y)
-        pygame.draw.rect(surface, (255, 0, 0), (rect_x, rect_y, int(w), int(h)), 1)
-        # Handle kecil di pojok
-        corners = [
-            (rect_x, rect_y),
-            (rect_x + w, rect_y),
-            (rect_x, rect_y + h),
-            (rect_x + w, rect_y + h)
-        ]
-        for c in corners:
-            pygame.draw.rect(surface, (0, 0, 255), (int(c[0]) - 3, int(c[1]) - 3, 6, 6))
+        rx, ry = int(min_x)-2, int(min_y)-2
+        pygame.draw.rect(surface, (59,130,246), (rx, ry, int(w)+4, int(h)+4), 2)
+        for c in [(rx,ry),(rx+int(w)+4,ry),(rx,ry+int(h)+4),(rx+int(w)+4,ry+int(h)+4)]:
+            pygame.draw.rect(surface, (255,255,255), (c[0]-3, c[1]-3, 7, 7))
+            pygame.draw.rect(surface, (59,130,246), (c[0]-3, c[1]-3, 7, 7), 1)
 
     def is_clicked(self, mouse_pos):
         """Deteksi klik dengan koreksi angle_z (inverse transform), sama seperti BelahKetupat."""

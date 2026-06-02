@@ -26,10 +26,11 @@ class ManualAlgorithms:
 
     # --- 2. ALGORITMA PEMBENTUKAN GARIS (Bresenham) ---
     @staticmethod
-    def draw_line_bresenham(surface, color, start_pos, end_pos):
+    def draw_line_bresenham(surface, color, start_pos, end_pos, thickness=1):
         """
         Implementasi manual pembentukan garis sesuai Modul Perkuliahan.
         Hanya menggunakan operasi integer untuk performa maksimal.
+        Mendukung ketebalan garis dengan menggambar offset pixel di sekitar koordinat utama.
         """
         x1, y1 = int(start_pos[0]), int(start_pos[1])
         x2, y2 = int(end_pos[0]), int(end_pos[1])
@@ -40,10 +41,21 @@ class ManualAlgorithms:
         sy = 1 if y1 < y2 else -1
         err = dx - dy
 
+        # Nilai ketebalan dibatasi minimal 1
+        t = max(1, int(thickness))
+
         while True:
-            # Set_at adalah metode manipulasi pixel langsung
-            if 0 <= x1 < surface.get_width() and 0 <= y1 < surface.get_height():
-                surface.set_at((x1, y1), color)
+            # Menggambar pixel-pixel di sekitar (x1, y1) sesuai ketebalan
+            if t == 1:
+                if 0 <= x1 < surface.get_width() and 0 <= y1 < surface.get_height():
+                    surface.set_at((x1, y1), color)
+            else:
+                half = t // 2
+                for ox in range(-half, t - half):
+                    for oy in range(-half, t - half):
+                        px, py = x1 + ox, y1 + oy
+                        if 0 <= px < surface.get_width() and 0 <= py < surface.get_height():
+                            surface.set_at((px, py), color)
 
             if x1 == x2 and y1 == y2: break
             

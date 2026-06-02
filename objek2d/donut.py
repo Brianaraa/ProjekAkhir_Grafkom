@@ -37,10 +37,11 @@ class Donut(BaseShape):
         return points
 
     def _transform_points(self, local_points):
-        """Pipeline Mirroring → Rotasi Z → Proyeksi Perspektif."""
+        """Pipeline Mirroring → Skew → Rotasi Z → Proyeksi Perspektif."""
         projected = []
         for px, py, pz in local_points:
             px, py, pz = self.apply_mirroring(px, py, pz)
+            px, py, pz = self.apply_skew(px, py, pz)
             rx, ry, rz = rotate_3d(px, py, pz, 0, 0, self.angle_z)
             fx, fy = project_3d_to_2d(rx, ry, rz + self.z, self.x, self.y)
             projected.append((fx, fy))
@@ -102,28 +103,24 @@ class Donut(BaseShape):
             surface.blit(ring_surf, (min_x - 1, min_y - 1))
 
         # 4. OUTLINE MANUAL BRESENHAM (lingkaran luar + lingkaran dalam)
-        for i in range(self._segments):
-            p1 = outer_proj[i]
-            p2 = outer_proj[(i + 1) % self._segments]
-            ManualAlgorithms.draw_line_bresenham(surface, self.outline_color, p1, p2)
-
-        for i in range(self._segments):
-            p1 = inner_proj[i]
-            p2 = inner_proj[(i + 1) % self._segments]
-            ManualAlgorithms.draw_line_bresenham(surface, self.outline_color, p1, p2)
+        if self.show_outline:
+            for i in range(self._segments):
+                p1 = outer_proj[i]; p2 = outer_proj[(i + 1) % self._segments]
+                ManualAlgorithms.draw_line_bresenham(surface, self.outline_color, p1, p2, self.outline_width)
+            for i in range(self._segments):
+                p1 = inner_proj[i]; p2 = inner_proj[(i + 1) % self._segments]
+                ManualAlgorithms.draw_line_bresenham(surface, self.outline_color, p1, p2, self.outline_width)
 
         # 5. Indikator Seleksi
         if self.is_selected:
             self._draw_selection_style(surface, min_x, min_y, surf_w, surf_h)
 
     def _draw_selection_style(self, surface, min_x, min_y, w, h):
-        """Visualisasi seleksi dinamis."""
-        rect_x, rect_y = int(min_x), int(min_y)
-        pygame.draw.rect(surface, (255, 0, 0), (rect_x, rect_y, int(w), int(h)), 1)
-        corners = [(rect_x, rect_y), (rect_x + w, rect_y),
-                   (rect_x, rect_y + h), (rect_x + w, rect_y + h)]
-        for c in corners:
-            pygame.draw.rect(surface, (0, 0, 255), (int(c[0]) - 3, int(c[1]) - 3, 6, 6))
+        rx, ry = int(min_x)-2, int(min_y)-2
+        pygame.draw.rect(surface, (59,130,246), (rx, ry, int(w)+4, int(h)+4), 2)
+        for c in [(rx,ry),(rx+int(w)+4,ry),(rx,ry+int(h)+4),(rx+int(w)+4,ry+int(h)+4)]:
+            pygame.draw.rect(surface, (255,255,255), (c[0]-3, c[1]-3, 7, 7))
+            pygame.draw.rect(surface, (59,130,246), (c[0]-3, c[1]-3, 7, 7), 1)
 
     def is_clicked(self, mouse_pos):
         """Deteksi klik area cincin dengan inverse rotation."""

@@ -199,12 +199,25 @@ class InputHandler:
                         shapes.append(new_obj)
                         history.save_state(shapes)
 
-        # Fitur Translasi Drag & Drop (Logika Mouse Motion)
+        # Fitur Translasi / Rotasi / Skala Drag & Drop (Logika Mouse Motion)
         elif event.type == pygame.MOUSEMOTION:
             if InputHandler.is_dragging and selected_shape and current_tool == "SELECT":
                 dx = mouse_pos[0] - InputHandler.last_mouse_pos[0]
                 dy = mouse_pos[1] - InputHandler.last_mouse_pos[1]
-                selected_shape.translate(dx, dy, 0)
+                
+                if ui.ctrl_mode == "TRANSLASI":
+                    selected_shape.translate(dx, dy, 0)
+                elif ui.ctrl_mode == "ROTASI":
+                    # Putar objek sesuai gerakan mouse
+                    if hasattr(selected_shape, "angle_x"):
+                        selected_shape.angle_x += dy * 0.01
+                        selected_shape.angle_y += dx * 0.01
+                    elif hasattr(selected_shape, "angle_z"):
+                        selected_shape.angle_z += dx * 0.01
+                elif ui.ctrl_mode == "SKALA":
+                    # Skala objek sesuai gerakan vertikal mouse
+                    selected_shape.scale = max(0.2, round(selected_shape.scale - dy * 0.01, 2))
+                
                 InputHandler.last_mouse_pos = mouse_pos
 
         # Fitur Translasi Drag & Drop (Logika Mouse Release)

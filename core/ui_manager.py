@@ -167,41 +167,53 @@ class UIManager:
         y   = NAVBAR_HEIGHT + 36
 
         # ── Kontrol Mouse ──
+        y += 20
+        self.btn_mode_translasi = Button(cx, y, cw, 26, "Mode Translasi", active=True)
         y += 30
-        self.btn_mode_translasi = Button(cx, y, cw, 28, "Mode Translasi", active=True)
-        y += 34
-        self.btn_mode_rotasi    = Button(cx, y, cw, 28, "Mode Rotasi")
-        y += 34
-        self.btn_mode_skala     = Button(cx, y, cw, 28, "Mode Skala")
-        y += 50
+        self.btn_mode_rotasi    = Button(cx, y, cw, 26, "Mode Rotasi")
+        y += 30
+        self.btn_mode_skala     = Button(cx, y, cw, 26, "Mode Skala")
+        y += 36
 
         # ── Rotasi ──
-        y += 30
+        y += 20
         hw = (cw - 6) // 2
-        self.btn_rot_kiri  = Button(cx, y, hw, 28, "◀ Rot Kiri")
-        self.btn_rot_kanan = Button(cx + hw + 6, y, hw, 28, "Rot Kanan ▶")
-        y += 50
+        self.btn_rot_kiri  = Button(cx, y, hw, 26, "◀ Rot Kiri")
+        self.btn_rot_kanan = Button(cx + hw + 6, y, hw, 26, "Rot Kanan ▶")
+        y += 36
 
         # ── Translasi (grid 3x3 arah) ──
-        y += 30
-        bs  = 36
-        gap = 5
+        y += 20
+        bs  = 30
+        gap = 4
         mid = cx + (cw - bs) // 2
         self.btn_t_up    = Button(mid, y, bs, bs, "↑")
         self.btn_t_left  = Button(mid - bs - gap, y + bs + gap, bs, bs, "←")
         self.btn_t_down  = Button(mid, y + bs + gap, bs, bs, "↓")
         self.btn_t_right = Button(mid + bs + gap, y + bs + gap, bs, bs, "→")
-        y += bs * 2 + gap + 14
+        y += bs * 2 + gap + 10
 
-        # ── Skala ──
+        # ── Skala & Mirror ──
+        y += 20
+        self.btn_perbesar = Button(cx, y, cw, 26, "＋  Perbesar", accent=True)
         y += 30
-        self.btn_perbesar = Button(cx, y, cw, 28, "＋  Perbesar", accent=True)
-        y += 34
-        self.btn_perkecil = Button(cx, y, cw, 28, "－  Perkecil")
-        y += 34
+        self.btn_perkecil = Button(cx, y, cw, 26, "－  Perkecil")
+        y += 30
         hw = (cw - 6) // 2
-        self.btn_mirror_h = Button(cx, y, hw, 28, "↔ Mirror H")
-        self.btn_mirror_v = Button(cx + hw + 6, y, hw, 28, "↕ Mirror V")
+        self.btn_mirror_h = Button(cx, y, hw, 26, "↔ Mirror H")
+        self.btn_mirror_v = Button(cx + hw + 6, y, hw, 26, "↕ Mirror V")
+        y += 36
+
+        # ── Skew ──
+        y += 20
+        hw = (cw - 6) // 2
+        self.btn_skew_x_min = Button(cx, y, hw, 26, "Skew X -")
+        self.btn_skew_x_plus = Button(cx + hw + 6, y, hw, 26, "Skew X +")
+        y += 30
+        self.btn_skew_y_min = Button(cx, y, hw, 26, "Skew Y -")
+        self.btn_skew_y_plus = Button(cx + hw + 6, y, hw, 26, "Skew Y +")
+        y += 30
+        self.btn_skew_reset = Button(cx, y, cw, 26, "Reset Skew")
 
     # ══════════════════════════════════════════════════════════
     #  DRAW
@@ -338,8 +350,17 @@ class UIManager:
         self.btn_mirror_h.draw(self.screen, self.font_btn, mp)
         self.btn_mirror_v.draw(self.screen, self.font_btn, mp)
 
+        # ── Skew ──
+        y = self.btn_skew_x_min.rect.y - 32
+        draw_section_header(self.screen, self.font_sect, cx, y, cw, "Skew")
+        self.btn_skew_x_min.draw(self.screen, self.font_btn, mp)
+        self.btn_skew_x_plus.draw(self.screen, self.font_btn, mp)
+        self.btn_skew_y_min.draw(self.screen, self.font_btn, mp)
+        self.btn_skew_y_plus.draw(self.screen, self.font_btn, mp)
+        self.btn_skew_reset.draw(self.screen, self.font_btn, mp)
+
         # ── Keyboard Shortcuts ──
-        sy = self.btn_perkecil.rect.bottom + 14
+        sy = self.btn_skew_reset.rect.bottom + 14
         if sy + 26 < NAVBAR_HEIGHT + CANVAS_HEIGHT - 10:
             draw_section_header(self.screen, self.font_sect, cx, sy, cw, "Keyboard Shortcuts")
             sy += 30
@@ -432,14 +453,35 @@ class UIManager:
                 h = self.inp_tinggi.get_value()
                 d = self.inp_depth.get_value()
                 actions.append({"action": "APPLY_SIZE", "w": w, "h": h, "d": d})
+                
+                try:
+                    ow = int(self.inp_outline_w.get_value())
+                    selected_shape.outline_width = max(1, ow)
+                except ValueError:
+                    pass
+
                 from objek2d.text_shape import TextShape
                 if isinstance(selected_shape, TextShape):
                     selected_shape.text = self.inp_teks.get_value()
-                    actions.append({"action": "STATE_CHANGED"})
+                actions.append({"action": "STATE_CHANGED"})
+
+        # ── Outline Toggle ──
+        if self.btn_outline.is_clicked(mouse_pos, event):
+            if selected_shape:
+                selected_shape.show_outline = not selected_shape.show_outline
+                self.btn_outline.active = selected_shape.show_outline
+                actions.append({"action": "STATE_CHANGED"})
 
         # ── TextInput events ──
         for inp in [self.inp_lebar, self.inp_tinggi, self.inp_depth, self.inp_outline_w, self.inp_teks]:
-            inp.handle_event(event, mouse_pos)
+            val = inp.handle_event(event, mouse_pos)
+            if val is not None and selected_shape:
+                if inp == self.inp_outline_w:
+                    try:
+                        selected_shape.outline_width = max(1, int(val))
+                        actions.append({"action": "STATE_CHANGED"})
+                    except ValueError:
+                        pass
 
         # ── Kontrol Mouse Mode ──
         if self.btn_mode_translasi.is_clicked(mouse_pos, event):
@@ -492,18 +534,45 @@ class UIManager:
             selected_shape.flip_y = not selected_shape.flip_y
             actions.append({"action": "STATE_CHANGED"})
 
+        # ── Skew tombol ──
+        skew_step = 0.05
+        if self.btn_skew_x_min.is_clicked(mouse_pos, event) and selected_shape:
+            selected_shape.skew_x = round(selected_shape.skew_x - skew_step, 2)
+            actions.append({"action": "STATE_CHANGED"})
+        if self.btn_skew_x_plus.is_clicked(mouse_pos, event) and selected_shape:
+            selected_shape.skew_x = round(selected_shape.skew_x + skew_step, 2)
+            actions.append({"action": "STATE_CHANGED"})
+        if self.btn_skew_y_min.is_clicked(mouse_pos, event) and selected_shape:
+            selected_shape.skew_y = round(selected_shape.skew_y - skew_step, 2)
+            actions.append({"action": "STATE_CHANGED"})
+        if self.btn_skew_y_plus.is_clicked(mouse_pos, event) and selected_shape:
+            selected_shape.skew_y = round(selected_shape.skew_y + skew_step, 2)
+            actions.append({"action": "STATE_CHANGED"})
+        if self.btn_skew_reset.is_clicked(mouse_pos, event) and selected_shape:
+            selected_shape.skew_x = 0.0
+            selected_shape.skew_y = 0.0
+            actions.append({"action": "STATE_CHANGED"})
+
         return actions
 
     def update_inputs_from_shape(self, shape):
         """Sinkronisasi nilai TextInput dari atribut objek terpilih."""
         if shape is None:
             return
-        w = getattr(shape, "base_width",  None) or getattr(shape, "base_outer_radius", 50)
-        h = getattr(shape, "base_height", None) or getattr(shape, "base_outer_radius", 50)
-        d = getattr(shape, "base_depth",  None) or getattr(shape, "z", 0)
+        w = getattr(shape, "base_width", None) or getattr(shape, "base_outer_radius", None) or getattr(shape, "base_radius", 50)
+        h = getattr(shape, "base_height", None) or getattr(shape, "base_outer_radius", None) or getattr(shape, "base_radius", 50)
+        d = getattr(shape, "base_depth", None) or getattr(shape, "z", 0)
+        
         self.inp_lebar.set_value(w)
         self.inp_tinggi.set_value(h)
         self.inp_depth.set_value(d)
+        
+        self.inp_outline_w.set_value(getattr(shape, "outline_width", 1))
+        self.btn_outline.active = getattr(shape, "show_outline", True)
+        
+        from objek2d.text_shape import TextShape
+        if isinstance(shape, TextShape):
+            self.inp_teks.set_value(shape.text)
 
     def apply_size_to_shape(self, shape, w, h, d):
         """Terapkan nilai input ke atribut objek yang relevan."""
