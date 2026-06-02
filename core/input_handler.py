@@ -82,6 +82,22 @@ class InputHandler:
                     selected_shape.set_color(current_color)
                     state_changed = True
 
+                # Scaling Manual dari Keyboard (+/-) (Objek A)
+                elif event.key in [pygame.K_EQUALS, pygame.K_PLUS, pygame.K_KP_PLUS]:
+                    selected_shape.apply_scaling(0.1)
+                    state_changed = True
+                elif event.key in [pygame.K_MINUS, pygame.K_KP_MINUS]:
+                    selected_shape.apply_scaling(-0.1)
+                    state_changed = True
+                    
+                # Mengubah kedalaman (Z-axis) manual dari keyboard
+                elif event.key == pygame.K_COMMA:
+                    selected_shape.translate(0, 0, -10)
+                    state_changed = True
+                elif event.key == pygame.K_PERIOD:
+                    selected_shape.translate(0, 0, 10)
+                    state_changed = True
+
                 # Fitur Mirroring (M/N)
                 elif event.key == pygame.K_m:
                     selected_shape.flip_x = not selected_shape.flip_x
@@ -90,44 +106,23 @@ class InputHandler:
                     selected_shape.flip_y = not selected_shape.flip_y
                     state_changed = True
 
-                # Fitur Scaling (Ubah Ukuran Fisik) 
-                # + / = : Perbesar Objek (Scaling Up) Memperbesar objek sebesar 10% (0.1)
-                elif event.key == pygame.K_EQUALS or event.key == pygame.K_KP_PLUS:
-                    selected_shape.scale += 0.1
-                    state_changed = True
-                # - : Perkecil Objek (Scaling Down) (Dibatasi minimal skala 0.2 agar objek tidak hilang atau terbalik)
-                elif event.key == pygame.K_MINUS or event.key == pygame.K_KP_MINUS:
-                    selected_shape.scale = max(0.2, selected_shape.scale - 0.1)
-                    state_changed = True
-
-                # Fitur Z-Depth (Efek Zoom Jarak Kamera) ---
-                # > : Geser Menjauh(Z+) (Mundur ke dalam layar)
-                elif event.key == pygame.K_PERIOD: 
-                    selected_shape.translate(0, 0, 10)
-                    state_changed = True
-                # <  : Geser Mendekat (Z-) (Maju ke arah user)
-                elif event.key == pygame.K_COMMA:  
-                    selected_shape.translate(0, 0, -10)
-                    state_changed = True
-
-                # Fitur Rotasi 3D (WASDQE) 
+                # Fitur Rotasi 3D & 2D (WASDQE)
                 elif event.key in (pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d, pygame.K_q, pygame.K_e):
-                    # Hanya putar jika objeknya 3D (punya atribut sudut)
+                    step = 0.1
+                    
                     if hasattr(selected_shape, 'angle_x'):
-                        step = 0.1 
-
-                        # W / S : Rotasi Sumbu X (Putar Atas/Bawah)
+                        # Objek 3D
                         if event.key == pygame.K_w: selected_shape.angle_x += step
                         elif event.key == pygame.K_s: selected_shape.angle_x -= step
-
-                        # A / D : Rotasi Sumbu Y (Putar Kiri/Kanan)
                         elif event.key == pygame.K_a: selected_shape.angle_y -= step
                         elif event.key == pygame.K_d: selected_shape.angle_y += step
-
-                        # Q / E : Rotasi Sumbu Z (Miring Kiri/Kanan)
                         elif event.key == pygame.K_q: selected_shape.angle_z -= step
                         elif event.key == pygame.K_e: selected_shape.angle_z += step
-
+                        state_changed = True
+                    elif hasattr(selected_shape, 'angle_z'):
+                        # Objek 2D
+                        if event.key == pygame.K_q: selected_shape.angle_z -= step
+                        elif event.key == pygame.K_e: selected_shape.angle_z += step
                         state_changed = True
 
                 # Fitur Pattern/Arsiran (P)
