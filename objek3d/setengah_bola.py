@@ -66,8 +66,13 @@ class SetengahBola(BaseShape):
             meridian_count = 8
             step = segments // meridian_count
             for i in range(meridian_count):
-                eq_pt = equator_pts[i * step]
-                pygame.draw.line(surface, self.color, eq_pt, apex, t)
+                idx = i * step
+                eq_pt = equator_pts[idx]
+                lat1_pt = latitude_pts_1[idx]
+                lat2_pt = latitude_pts_2[idx]
+                pygame.draw.line(surface, self.color, eq_pt, lat1_pt, t)
+                pygame.draw.line(surface, self.color, lat1_pt, lat2_pt, t)
+                pygame.draw.line(surface, self.color, lat2_pt, apex, t)
 
         # 4. Indikator Seleksi
         if self.is_selected:

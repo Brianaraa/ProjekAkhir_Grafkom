@@ -148,7 +148,7 @@ def main():
         screen.blit(bg_surface, (0, 0))
 
         # 2. UI layout (navbar + panel + canvas)
-        ui.draw_layout(selected_shape)
+        ui.draw_layout(current_tool, selected_shape)
 
         # 3. Gambar objek (clip ke canvas agar tidak meluber ke panel)
         screen.set_clip(ui.canvas_rect)

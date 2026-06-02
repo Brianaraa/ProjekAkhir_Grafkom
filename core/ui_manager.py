@@ -93,9 +93,9 @@ class UIManager:
 
         # Toggle 2D / 3D
         hw = (lw - 6) // 2
-        self.btn_2d = Button(lx, y, hw, 30, "2D", active=True)
-        self.btn_3d = Button(lx + hw + 6, y, hw, 30, "3D")
-        y += 44
+        self.btn_2d = Button(lx, y, hw, 28, "2D", active=True)
+        self.btn_3d = Button(lx + hw + 6, y, hw, 28, "3D")
+        y += 38
 
         # Tombol SELECT
         self.btn_select = Button(lx, y, lw, 28, "[ 1 ] Mode Select", active=True)
@@ -103,10 +103,11 @@ class UIManager:
 
         # Tombol FILL
         self.btn_fill = Button(lx, y, lw, 28, "[ 9 ] Fill Area")
-        y += 40
+        y += 34
 
         # Shape buttons (diisi di _refresh_shape_buttons)
-        self._shape_btn_y_start = y
+        # Tambahkan jarak untuk header "Pilih Bentuk" di _draw_left_panel
+        self._shape_btn_y_start = y + 36
         self.shape_buttons = []
         self._refresh_shape_buttons()
 
@@ -132,17 +133,17 @@ class UIManager:
         y   = NAVBAR_HEIGHT + 36
 
         # ── Ukuran & Konten Bentuk ──
-        y += 30   # section header space
-        self.inp_lebar   = TextInput(tx, y + 18, tw, 28, "Lebar (W)")
-        y += 60
-        self.inp_tinggi  = TextInput(tx, y + 18, tw, 28, "Tinggi (H)")
-        y += 60
-        self.inp_depth   = TextInput(tx, y + 18, tw, 28, "Kedalaman (Z)")
-        y += 60
-        self.inp_teks    = TextInput(tx, y + 18, tw, 28, "Isi Teks", value="Teks Baru", numeric=False)
-        y += 60
+        y += 26   # section header space
+        self.inp_lebar   = TextInput(tx, y + 18, tw, 26, "Lebar (W)")
+        y += 50
+        self.inp_tinggi  = TextInput(tx, y + 18, tw, 26, "Tinggi (H)")
+        y += 50
+        self.inp_depth   = TextInput(tx, y + 18, tw, 26, "Kedalaman (Z)")
+        y += 50
+        self.inp_teks    = TextInput(tx, y + 18, tw, 26, "Isi Teks", value="Teks Baru", numeric=False)
+        y += 52
         self.btn_terapkan_ukuran = Button(tx, y, tw, 28, "Terapkan Ukuran", accent=True)
-        y += 44
+        y += 36
 
         # ── Warna ──
         y += 30   # section header space
@@ -164,66 +165,69 @@ class UIManager:
     def _build_control_panel(self):
         cx  = self.control_rect.x + 10
         cw  = CONTROL_PANEL_WIDTH - 20
-        y   = NAVBAR_HEIGHT + 36
+        y   = NAVBAR_HEIGHT
 
-        # ── Kontrol Mouse ──
-        y += 20
-        self.btn_mode_translasi = Button(cx, y, cw, 26, "Mode Translasi", active=True)
-        y += 30
-        self.btn_mode_rotasi    = Button(cx, y, cw, 26, "Mode Rotasi")
-        y += 30
-        self.btn_mode_skala     = Button(cx, y, cw, 26, "Mode Skala")
-        y += 36
+        # ── Section: Kontrol (top header, drawn in _draw) ──
+        y += 26  # section header "Kontrol" height
 
-        # ── Rotasi ──
-        y += 20
+        # ── Section: Kontrol Mouse ──
+        y += 26  # section header "Kontrol Mouse" height
+        self.btn_mode_translasi = Button(cx, y, cw, 24, "Mode Translasi", active=True)
+        y += 26
+        self.btn_mode_rotasi    = Button(cx, y, cw, 24, "Mode Rotasi")
+        y += 26
+        self.btn_mode_skala     = Button(cx, y, cw, 24, "Mode Skala")
+        y += 28
+
+        # ── Section: Rotasi ──
+        y += 26  # section header "Rotasi" height
         hw = (cw - 6) // 2
-        self.btn_rot_kiri  = Button(cx, y, hw, 26, "◀ Rot Kiri")
-        self.btn_rot_kanan = Button(cx + hw + 6, y, hw, 26, "Rot Kanan ▶")
-        y += 36
+        self.btn_rot_kiri  = Button(cx, y, hw, 24, "◀ Rot Kiri")
+        self.btn_rot_kanan = Button(cx + hw + 6, y, hw, 24, "Rot Kanan ▶")
+        y += 28
 
-        # ── Translasi (grid 3x3 arah) ──
-        y += 20
-        bs  = 30
-        gap = 4
+        # ── Section: Translasi ──
+        y += 26  # section header "Translasi" height
+        bs  = 24
+        gap = 3
         mid = cx + (cw - bs) // 2
         self.btn_t_up    = Button(mid, y, bs, bs, "↑")
         self.btn_t_left  = Button(mid - bs - gap, y + bs + gap, bs, bs, "←")
         self.btn_t_down  = Button(mid, y + bs + gap, bs, bs, "↓")
         self.btn_t_right = Button(mid + bs + gap, y + bs + gap, bs, bs, "→")
-        y += bs * 2 + gap + 10
+        y += bs * 2 + gap + 6
 
-        # ── Skala & Mirror ──
-        y += 20
-        self.btn_perbesar = Button(cx, y, cw, 26, "＋  Perbesar", accent=True)
-        y += 30
-        self.btn_perkecil = Button(cx, y, cw, 26, "－  Perkecil")
-        y += 30
+        # ── Section: Skala & Mirror ──
+        y += 26  # section header "Skala & Mirror" height
+        self.btn_perbesar = Button(cx, y, cw, 24, "＋ Perbesar", accent=True)
+        y += 26
+        self.btn_perkecil = Button(cx, y, cw, 24, "－ Perkecil")
+        y += 26
         hw = (cw - 6) // 2
-        self.btn_mirror_h = Button(cx, y, hw, 26, "↔ Mirror H")
-        self.btn_mirror_v = Button(cx + hw + 6, y, hw, 26, "↕ Mirror V")
-        y += 36
+        self.btn_mirror_h = Button(cx, y, hw, 24, "↔ Mirror H")
+        self.btn_mirror_v = Button(cx + hw + 6, y, hw, 24, "↕ Mirror V")
+        y += 28
 
-        # ── Skew ──
-        y += 20
+        # ── Section: Skew ──
+        y += 26  # section header "Skew" height
         hw = (cw - 6) // 2
-        self.btn_skew_x_min = Button(cx, y, hw, 26, "Skew X -")
-        self.btn_skew_x_plus = Button(cx + hw + 6, y, hw, 26, "Skew X +")
-        y += 30
-        self.btn_skew_y_min = Button(cx, y, hw, 26, "Skew Y -")
-        self.btn_skew_y_plus = Button(cx + hw + 6, y, hw, 26, "Skew Y +")
-        y += 30
-        self.btn_skew_reset = Button(cx, y, cw, 26, "Reset Skew")
+        self.btn_skew_x_min = Button(cx, y, hw, 24, "Skew X -")
+        self.btn_skew_x_plus = Button(cx + hw + 6, y, hw, 24, "Skew X +")
+        y += 26
+        self.btn_skew_y_min = Button(cx, y, hw, 24, "Skew Y -")
+        self.btn_skew_y_plus = Button(cx + hw + 6, y, hw, 24, "Skew Y +")
+        y += 26
+        self.btn_skew_reset = Button(cx, y, cw, 24, "Reset Skew")
 
     # ══════════════════════════════════════════════════════════
     #  DRAW
     # ══════════════════════════════════════════════════════════
 
-    def draw_layout(self, selected_shape=None):
+    def draw_layout(self, current_tool="", selected_shape=None):
         mp = pygame.mouse.get_pos()
         self._draw_navbar()
         self._draw_canvas_bg()
-        self._draw_left_panel(mp)
+        self._draw_left_panel(mp, current_tool)
         self._draw_tools_panel(mp, selected_shape)
         self._draw_control_panel(mp)
 
@@ -243,7 +247,7 @@ class UIManager:
             for gy in range(self.canvas_rect.y + step, self.canvas_rect.bottom, step):
                 pygame.draw.circle(self.screen, C_CANVAS_GRID, (gx, gy), 1)
 
-    def _draw_left_panel(self, mp):
+    def _draw_left_panel(self, mp, current_tool=""):
         draw_panel_bg(self.screen, 0, NAVBAR_HEIGHT, LEFT_PANEL_WIDTH, CANVAS_HEIGHT)
 
         y = NAVBAR_HEIGHT
@@ -255,7 +259,9 @@ class UIManager:
         self.btn_2d.draw(self.screen, self.font_btn, mp)
         self.btn_3d.draw(self.screen, self.font_btn, mp)
 
-        # Mode Select & Fill
+        # Mode Select & Fill (Sync active state)
+        self.btn_select.active = (current_tool == "SELECT")
+        self.btn_fill.active = (current_tool == "FILL")
         self.btn_select.draw(self.screen, self.font_md, mp)
         self.btn_fill.draw(self.screen, self.font_md, mp)
 
@@ -264,7 +270,8 @@ class UIManager:
         draw_section_header(self.screen, self.font_sect, 0, sec_y, LEFT_PANEL_WIDTH,
                              f"Pilih Bentuk {'2D' if self.mode_2d3d == '2D' else '3D'}")
 
-        for btn, _ in self.shape_buttons:
+        for btn, tool_key in self.shape_buttons:
+            btn.active = (current_tool == tool_key)
             btn.draw(self.screen, self.font_md, mp)
 
         # Reset/Hapus
@@ -320,7 +327,8 @@ class UIManager:
         y = draw_section_header(self.screen, self.font_sect, cx, y, cw, "Kontrol")
 
         # ── Kontrol Mouse ──
-        y = draw_section_header(self.screen, self.font_sect, cx, y, cw, "Kontrol Mouse")
+        draw_section_header(self.screen, self.font_sect, cx,
+                             self.btn_mode_translasi.rect.y - 26, cw, "Kontrol Mouse")
         self.btn_mode_translasi.active = (self.ctrl_mode == "TRANSLASI")
         self.btn_mode_rotasi.active    = (self.ctrl_mode == "ROTASI")
         self.btn_mode_skala.active     = (self.ctrl_mode == "SKALA")
@@ -329,30 +337,30 @@ class UIManager:
         self.btn_mode_skala.draw(self.screen, self.font_btn, mp)
 
         # ── Rotasi ──
-        y = self.btn_rot_kiri.rect.y - 32
-        draw_section_header(self.screen, self.font_sect, cx, y, cw, "Rotasi")
+        draw_section_header(self.screen, self.font_sect, cx,
+                             self.btn_rot_kiri.rect.y - 26, cw, "Rotasi")
         self.btn_rot_kiri.draw(self.screen, self.font_btn, mp)
         self.btn_rot_kanan.draw(self.screen, self.font_btn, mp)
 
         # ── Translasi ──
-        y = self.btn_t_up.rect.y - 32
-        draw_section_header(self.screen, self.font_sect, cx, y, cw, "Translasi")
+        draw_section_header(self.screen, self.font_sect, cx,
+                             self.btn_t_up.rect.y - 26, cw, "Translasi")
         self.btn_t_up.draw(self.screen, self.font_btn, mp)
         self.btn_t_left.draw(self.screen, self.font_btn, mp)
         self.btn_t_down.draw(self.screen, self.font_btn, mp)
         self.btn_t_right.draw(self.screen, self.font_btn, mp)
 
         # ── Skala & Mirroring ──
-        y = self.btn_perbesar.rect.y - 32
-        draw_section_header(self.screen, self.font_sect, cx, y, cw, "Skala & Mirror")
+        draw_section_header(self.screen, self.font_sect, cx,
+                             self.btn_perbesar.rect.y - 26, cw, "Skala & Mirror")
         self.btn_perbesar.draw(self.screen, self.font_btn, mp)
         self.btn_perkecil.draw(self.screen, self.font_btn, mp)
         self.btn_mirror_h.draw(self.screen, self.font_btn, mp)
         self.btn_mirror_v.draw(self.screen, self.font_btn, mp)
 
         # ── Skew ──
-        y = self.btn_skew_x_min.rect.y - 32
-        draw_section_header(self.screen, self.font_sect, cx, y, cw, "Skew")
+        draw_section_header(self.screen, self.font_sect, cx,
+                             self.btn_skew_x_min.rect.y - 26, cw, "Skew")
         self.btn_skew_x_min.draw(self.screen, self.font_btn, mp)
         self.btn_skew_x_plus.draw(self.screen, self.font_btn, mp)
         self.btn_skew_y_min.draw(self.screen, self.font_btn, mp)
@@ -360,10 +368,10 @@ class UIManager:
         self.btn_skew_reset.draw(self.screen, self.font_btn, mp)
 
         # ── Keyboard Shortcuts ──
-        sy = self.btn_skew_reset.rect.bottom + 14
+        sy = self.btn_skew_reset.rect.bottom + 8
         if sy + 26 < NAVBAR_HEIGHT + CANVAS_HEIGHT - 10:
             draw_section_header(self.screen, self.font_sect, cx, sy, cw, "Keyboard Shortcuts")
-            sy += 30
+            sy += 28
             for key, desc in SHORTCUTS:
                 if sy + 16 > NAVBAR_HEIGHT + CANVAS_HEIGHT - 5:
                     break
@@ -371,7 +379,7 @@ class UIManager:
                 ds = self.font_sm.render(f"  {desc}", True, C_TEXT_LIGHT)
                 self.screen.blit(ks, (cx + 10, sy))
                 self.screen.blit(ds, (cx + 10 + ks.get_width(), sy))
-                sy += 17
+                sy += 16
 
     # ══════════════════════════════════════════════════════════
     #  STATUS BAR (di atas canvas, bawah navbar)
@@ -559,30 +567,38 @@ class UIManager:
         """Sinkronisasi nilai TextInput dari atribut objek terpilih."""
         if shape is None:
             return
-        w = getattr(shape, "base_width", None) or getattr(shape, "base_outer_radius", None) or getattr(shape, "base_radius", 50)
-        h = getattr(shape, "base_height", None) or getattr(shape, "base_outer_radius", None) or getattr(shape, "base_radius", 50)
-        d = getattr(shape, "base_depth", None) or getattr(shape, "z", 0)
-        
-        self.inp_lebar.set_value(w)
-        self.inp_tinggi.set_value(h)
-        self.inp_depth.set_value(d)
+            
+        from objek2d.text_shape import TextShape
+        if isinstance(shape, TextShape):
+            self.inp_lebar.set_value(shape.size)
+            self.inp_tinggi.set_value(shape.size)
+            self.inp_depth.set_value(getattr(shape, "z", 0))
+            self.inp_teks.set_value(shape.text)
+        else:
+            w = getattr(shape, "base_width", None) or getattr(shape, "base_outer_radius", None) or getattr(shape, "base_radius", 50)
+            h = getattr(shape, "base_height", None) or getattr(shape, "base_outer_radius", None) or getattr(shape, "base_radius", 50)
+            d = getattr(shape, "base_depth", None) or getattr(shape, "z", 0)
+            self.inp_lebar.set_value(w)
+            self.inp_tinggi.set_value(h)
+            self.inp_depth.set_value(d)
         
         self.inp_outline_w.set_value(getattr(shape, "outline_width", 1))
         self.btn_outline.active = getattr(shape, "show_outline", True)
-        
-        from objek2d.text_shape import TextShape
-        if isinstance(shape, TextShape):
-            self.inp_teks.set_value(shape.text)
 
     def apply_size_to_shape(self, shape, w, h, d):
         """Terapkan nilai input ke atribut objek yang relevan."""
         if shape is None:
             return
-        if hasattr(shape, "base_width"):   shape.base_width  = max(10, w)
-        if hasattr(shape, "base_height"):  shape.base_height = max(10, h)
-        if hasattr(shape, "base_depth"):   shape.base_depth  = max(10, d)
-        if hasattr(shape, "base_outer_radius"): shape.base_outer_radius = max(10, w)
-        if hasattr(shape, "base_radius"):  shape.base_radius = max(10, w)
+            
+        from objek2d.text_shape import TextShape
+        if isinstance(shape, TextShape):
+            shape.size = max(10, w)
+        else:
+            if hasattr(shape, "base_width"):   shape.base_width  = max(10, w)
+            if hasattr(shape, "base_height"):  shape.base_height = max(10, h)
+            if hasattr(shape, "base_depth"):   shape.base_depth  = max(10, d)
+            if hasattr(shape, "base_outer_radius"): shape.base_outer_radius = max(10, w)
+            if hasattr(shape, "base_radius"):  shape.base_radius = max(10, w)
 
     def update(self, dt_ms):
         """Tick update untuk animasi TextInput (cursor blink)."""
