@@ -490,6 +490,16 @@ class UIManager:
                         actions.append({"action": "STATE_CHANGED"})
                     except ValueError:
                         pass
+                elif inp in [self.inp_lebar, self.inp_tinggi, self.inp_depth]:
+                    w = self.inp_lebar.get_value()
+                    h = self.inp_tinggi.get_value()
+                    d = self.inp_depth.get_value()
+                    actions.append({"action": "APPLY_SIZE", "w": w, "h": h, "d": d})
+                elif inp == self.inp_teks:
+                    from objek2d.text_shape import TextShape
+                    if isinstance(selected_shape, TextShape):
+                        selected_shape.text = str(val)
+                    actions.append({"action": "STATE_CHANGED"})
 
         # ── Kontrol Mouse Mode ──
         if self.btn_mode_translasi.is_clicked(mouse_pos, event):

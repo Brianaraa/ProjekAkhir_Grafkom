@@ -15,6 +15,7 @@ class PatternStyle:
     FILL_HATCH_DIAGONAL = 11
     FILL_HATCH_CROSS = 12
     FILL_DOTS = 13
+    FILL_HOLLOW = 14 # Tanpa Isian (Transparan)
 
 
 class PatternGenerator:
@@ -104,6 +105,10 @@ class PatternGenerator:
             # Menggambar polkadot (titik di tengah)
             center = size // 2
             pygame.draw.circle(pattern_surface, fg_color, (center, center), max(1, size//4))
+            
+        elif pattern_type == PatternStyle.FILL_HOLLOW:
+            # Tidak diisi apa-apa (Transparan total)
+            pattern_surface.fill((0, 0, 0, 0))
             
         else:
             # Default FILL_SOLID

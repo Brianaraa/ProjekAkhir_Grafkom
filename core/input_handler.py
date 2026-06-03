@@ -133,8 +133,8 @@ class InputHandler:
                 # Fitur Pattern/Arsiran (P)
                 elif event.key == pygame.K_p:
                     if hasattr(selected_shape, 'fill_type'):
-                        # Cycle through 10, 11, 12, 13
-                        patterns = [PatternStyle.FILL_SOLID, PatternStyle.FILL_HATCH_DIAGONAL, PatternStyle.FILL_HATCH_CROSS, PatternStyle.FILL_DOTS]
+                        # Cycle through 10, 11, 12, 13, 14
+                        patterns = [PatternStyle.FILL_SOLID, PatternStyle.FILL_HATCH_DIAGONAL, PatternStyle.FILL_HATCH_CROSS, PatternStyle.FILL_DOTS, PatternStyle.FILL_HOLLOW]
                         try:
                             idx = patterns.index(selected_shape.fill_type)
                         except ValueError:
@@ -147,6 +147,19 @@ class InputHandler:
                     shapes.remove(selected_shape)
                     selected_shape = None
                     state_changed = True
+                    
+                # Fitur Stamp/Leburkan ke Kanvas (Enter)
+                elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                    if bg_surface is not None:
+                        # Hilangkan tanda seleksi biru sebelum distamp
+                        selected_shape.is_selected = False
+                        # Gambar bentuknya secara permanen ke background
+                        selected_shape.draw(bg_surface)
+                        # Buang dari list objek yang bisa diedit
+                        shapes.remove(selected_shape)
+                        selected_shape = None
+                        state_changed = True
+                        print("[System] Objek berhasil dileburkan ke kanvas.")
                     
                 # Jika ada perubahan (Rotasi, Skala, Warna, dsb), rekam ke Stack Undo
                 if state_changed:

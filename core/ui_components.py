@@ -50,6 +50,10 @@ class TextInput:
         self._blink = True
         self._timer = 0
         self.numeric = numeric
+        
+        self.btn_w = 16
+        self.up_rect = pygame.Rect(self.rect.right - self.btn_w, self.rect.y, self.btn_w, self.rect.h // 2)
+        self.down_rect = pygame.Rect(self.rect.right - self.btn_w, self.rect.y + self.rect.h // 2, self.btn_w, self.rect.h - (self.rect.h // 2))
 
     def set_value(self, val):
         if self.numeric:
@@ -69,7 +73,16 @@ class TextInput:
 
     def handle_event(self, event, mouse_pos):
         if event.type == pygame.MOUSEBUTTONDOWN:
-            self.active = self.rect.collidepoint(mouse_pos)
+            if event.button == 1:
+                if self.numeric:
+                    if self.up_rect.collidepoint(mouse_pos):
+                        self.set_value(self.get_value() + 1)
+                        return self.get_value()
+                    elif self.down_rect.collidepoint(mouse_pos):
+                        self.set_value(self.get_value() - 1)
+                        return self.get_value()
+                
+                self.active = self.rect.collidepoint(mouse_pos)
             return None
         if self.active and event.type == pygame.KEYDOWN:
             if event.key == pygame.K_BACKSPACE:
@@ -107,6 +120,24 @@ class TextInput:
         border = C_ACCENT if self.active else C_BTN_BORDER
         pygame.draw.rect(surface, border, self.rect, border_radius=4)
         pygame.draw.rect(surface, C_WHITE, self.rect.inflate(-2, -2), border_radius=3)
+
+        if self.numeric:
+            pygame.draw.line(surface, C_BTN_BORDER, (self.rect.right - self.btn_w, self.rect.top), (self.rect.right - self.btn_w, self.rect.bottom), 1)
+            pygame.draw.line(surface, C_BTN_BORDER, (self.rect.right - self.btn_w, self.rect.centery), (self.rect.right, self.rect.centery), 1)
+            
+            up_hover = self.up_rect.collidepoint(mouse_pos)
+            down_hover = self.down_rect.collidepoint(mouse_pos)
+            
+            if up_hover: pygame.draw.rect(surface, C_BTN_HOVER, self.up_rect.inflate(-2, -2))
+            if down_hover: pygame.draw.rect(surface, C_BTN_HOVER, self.down_rect.inflate(-2, -2))
+            
+            # Segitiga atas
+            ux, uy = self.up_rect.center
+            pygame.draw.polygon(surface, C_TEXT, [(ux - 4, uy + 2), (ux + 4, uy + 2), (ux, uy - 3)])
+            
+            # Segitiga bawah
+            dx, dy = self.down_rect.center
+            pygame.draw.polygon(surface, C_TEXT, [(dx - 4, dy - 2), (dx + 4, dy - 2), (dx, dy + 3)])
 
         display = self.text + ("|" if self.active and self._blink else "")
         ts = font.render(display, True, C_TEXT)
